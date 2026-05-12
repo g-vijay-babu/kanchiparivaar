@@ -34,19 +34,20 @@ KanchiParivaar is a lightweight, fully serverless gallery website built without 
 | Auth | SHA-256 password hash + timing-safe comparison |
 
 ## Project Structure
-├── index.html               # Public gallery site
-├── hbjbk5gionbu5h5ubj58hnjf9-gb58g-g5oo.html               # Password-protected admin panel
-├── admin-config.js          # Admin session config
-├── gallery.json             # Gallery data (managed via admin panel)
-├── Kanchiparivaar.jpg       # Logo
-├── .gitignore
-├── netlify.toml             # Netlify build + redirect config
-└── netlify/
-    └── functions/
-        ├── admin-auth.js    # Password verification (timing-safe)
-        ├── gallery-read.js  # Read gallery.json from GitHub
-        ├── gallery-write.js # Write gallery.json to GitHub (auth required)
-        └── drive-folder.js  # List images from a Google Drive folder
+
+├── index.html                     # Public gallery site  
+├── hbjbk5gionbu5h5ubj58hnjf9-gb58g-g5oo.html   # Password-protected admin panel  
+├── admin-config.js               # Admin session config  
+├── gallery.json                  # Gallery data (managed via admin panel)  
+├── Kanchiparivaar.jpg            # Logo  
+├── .gitignore  
+├── netlify.toml                  # Netlify build + redirect config  
+└── netlify/  
+    └── functions/  
+        ├── admin-auth.js         # Password verification (timing-safe)  
+        ├── gallery-read.js       # Read gallery.json from GitHub  
+        ├── gallery-write.js      # Write gallery.json to GitHub (auth required)  
+        └── drive-folder.js       # List images from a Google Drive folder  
 
 ## Environment Variables
 

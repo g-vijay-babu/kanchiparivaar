@@ -42,11 +42,11 @@ KanchiParivaar is a lightweight, fully serverless gallery website built without 
 ├── .gitignore
 ├── netlify.toml             # Netlify build + redirect config
 └── netlify/
-└── functions/
-├── admin-auth.js    # Password verification (timing-safe)
-├── gallery-read.js  # Read gallery.json from GitHub
-├── gallery-write.js # Write gallery.json to GitHub (auth required)
-└── drive-folder.js  # List images from a Google Drive folder
+    └── functions/
+        ├── admin-auth.js    # Password verification (timing-safe)
+        ├── gallery-read.js  # Read gallery.json from GitHub
+        ├── gallery-write.js # Write gallery.json to GitHub (auth required)
+        └── drive-folder.js  # List images from a Google Drive folder
 
 ## Environment Variables
 

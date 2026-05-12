@@ -1,0 +1,3 @@
+const ADMIN_CONFIG = {
+  SESSION_DURATION: 60,
+};

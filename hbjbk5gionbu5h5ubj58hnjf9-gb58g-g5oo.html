@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KanchiParivaar – Admin</title>
+  <!-- DO NOT link this page from index.html -->
+  <!-- Access it directly: yoursite.com/admin.html -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/jpeg" href="Kanchiparivaar.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --crimson:#800020; --deep:#580015; --gold:#C9952A; --gold-light:#F0C060;
+      --cream:#f8f3ec; --bg:#1a0a0e; --card:#24101a; --border:#3a1828;
+      --text:#f0e8d8; --muted:#9a7a88;
+    }
+    body { font-family:'Cormorant Garamond',serif; background:var(--bg); color:var(--text); min-height:100vh; }
+ 
+    /* ── LOGIN SCREEN ─────────── */
+    #login-screen {
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      background:radial-gradient(ellipse at center, #2a0a14 0%, #0e0508 100%);
+    }
+    .login-box {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-top:3px solid var(--gold);
+      border-radius:8px;
+      padding:48px 40px;
+      width:100%; max-width:400px;
+      text-align:center;
+      box-shadow:0 24px 64px rgba(0,0,0,.6);
+    }
+    .login-logo { width:72px; height:72px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; margin-bottom:20px; }
+    .login-title { font-family:'Cinzel',serif; font-size:1.3rem; color:var(--gold-light); letter-spacing:.1em; margin-bottom:6px; }
+    .login-sub { color:var(--muted); font-size:.9rem; margin-bottom:32px; }
+    .form-group { margin-bottom:18px; text-align:left; }
+    .form-group label { display:block; font-size:.8rem; letter-spacing:.1em; color:var(--muted); margin-bottom:7px; font-family:'Cinzel',serif; }
+    .form-group input {
+      width:100%; padding:12px 14px; background:#120508;
+      border:1px solid var(--border); border-radius:4px; color:var(--text);
+      font-size:1rem; font-family:'Cormorant Garamond',serif; outline:none; transition:border-color .2s;
+    }
+    .form-group input:focus { border-color:var(--gold); }
+    .btn-login {
+      width:100%; padding:13px; background:var(--crimson); color:var(--gold-light);
+      border:1px solid var(--gold); font-family:'Cinzel',serif; font-size:.82rem;
+      letter-spacing:.15em; cursor:pointer; border-radius:4px; transition:background .2s; margin-top:6px;
+    }
+    .btn-login:hover { background:var(--deep); }
+    .btn-login:disabled { opacity:.5; cursor:not-allowed; }
+    .login-error {
+      background:rgba(200,0,30,.15); border:1px solid rgba(200,0,30,.3);
+      color:#ff8888; padding:10px 14px; border-radius:4px;
+      font-size:.88rem; margin-bottom:16px; display:none;
+    }
+    .login-note { font-size:.75rem; color:var(--muted); margin-top:20px; line-height:1.6; }
+    .lockout-msg {
+      background:rgba(200,100,0,.15); border:1px solid rgba(200,100,0,.3);
+      color:#ffaa66; padding:10px 14px; border-radius:4px;
+      font-size:.88rem; margin-bottom:16px; display:none;
+    }
+ 
+    /* ── ADMIN PANEL ──────────── */
+    #admin-panel { display:none; }
+    .admin-header {
+      background:var(--deep); padding:16px 28px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:2px solid var(--gold); position:sticky; top:0; z-index:50;
+    }
+    .admin-logo-row { display:flex; align-items:center; gap:12px; }
+    .admin-logo-img { width:40px; height:40px; border-radius:50%; border:1px solid var(--gold); object-fit:cover; }
+    .admin-title { font-family:'Cinzel',serif; font-size:1rem; color:var(--gold-light); letter-spacing:.1em; }
+    .btn-logout {
+      padding:8px 18px; background:transparent; border:1px solid #555;
+      color:var(--muted); font-family:'Cinzel',serif; font-size:.72rem;
+      letter-spacing:.1em; cursor:pointer; border-radius:3px; transition:all .2s;
+    }
+    .btn-logout:hover { border-color:var(--crimson); color:#ff8888; }
+    .admin-body { max-width:1100px; margin:0 auto; padding:32px 20px; }
+ 
+    /* Stats */
+    .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:36px; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:20px 18px; text-align:center; }
+    .stat-num { font-size:2.2rem; font-weight:600; color:var(--gold-light); font-family:'Cinzel',serif; }
+    .stat-lbl { font-size:.78rem; color:var(--muted); margin-top:4px; letter-spacing:.08em; }
+ 
+    /* Panel cards */
+    .panel-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:8px; padding:28px; margin-bottom:28px;
+    }
+    .panel-card h3 {
+      font-family:'Cinzel',serif; color:var(--gold-light);
+      font-size:1rem; letter-spacing:.1em; margin-bottom:22px;
+      padding-bottom:12px; border-bottom:1px solid var(--border);
+    }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .f-group { margin-bottom:16px; }
+    .f-group label { display:block; font-size:.78rem; letter-spacing:.08em; color:var(--muted); margin-bottom:7px; font-family:'Cinzel',serif; }
+    .f-group input, .f-group select, .f-group textarea {
+      width:100%; padding:10px 12px; background:#120508;
+      border:1px solid var(--border); border-radius:4px; color:var(--text);
+      font-size:.95rem; font-family:'Cormorant Garamond',serif; outline:none; transition:border-color .2s;
+    }
+    .f-group input:focus, .f-group select:focus, .f-group textarea:focus { border-color:var(--gold); }
+    .f-group select option { background:#1a0a0e; }
+    .url-help { margin-top:6px; font-size:.75rem; color:var(--muted); line-height:1.5; }
+ 
+    .btn-add {
+      padding:12px 28px; background:var(--crimson); color:var(--gold-light);
+      border:1px solid var(--gold); font-family:'Cinzel',serif; font-size:.8rem;
+      letter-spacing:.12em; cursor:pointer; border-radius:4px; transition:background .2s;
+    }
+    .btn-add:hover { background:var(--deep); }
+    .add-status {
+      margin-top:12px; padding:10px 14px; border-radius:4px; font-size:.9rem; display:none;
+    }
+    .add-status.ok  { background:rgba(0,150,50,.15); border:1px solid rgba(0,200,80,.25); color:#88ee99; }
+    .add-status.err { background:rgba(200,0,30,.15); border:1px solid rgba(200,0,30,.3);  color:#ff8888; }
+ 
+    /* ── GOOGLE DRIVE BULK ADD ─────────────────────── */
+    .gdrive-section { margin-top:28px; padding-top:24px; border-top:1px solid var(--border); }
+    .gdrive-section h4 { font-family:'Cinzel',serif; color:var(--gold); font-size:.85rem; letter-spacing:.1em; margin-bottom:16px; }
+    .gdrive-row { display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+    .gdrive-row input { flex:1; min-width:200px; }
+    .btn-secondary {
+      padding:10px 20px; background:transparent; color:var(--gold-light);
+      border:1px solid var(--gold); font-family:'Cinzel',serif; font-size:.75rem;
+      letter-spacing:.1em; cursor:pointer; border-radius:4px; transition:all .2s; white-space:nowrap;
+    }
+    .btn-secondary:hover { background:rgba(201,149,42,.12); }
+    .btn-danger {
+      padding:10px 20px; background:transparent; color:#cc8888;
+      border:1px solid #662; font-family:'Cinzel',serif; font-size:.75rem;
+      letter-spacing:.1em; cursor:pointer; border-radius:4px; transition:all .2s;
+    }
+    .btn-danger:hover { background:rgba(200,0,30,.2); }
+ 
+    /* Preview table */
+    .preview-wrap { margin-top:18px; overflow-x:auto; display:none; }
+    .preview-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+    .preview-table th {
+      font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.1em;
+      color:var(--muted); text-align:left; padding:9px 10px; border-bottom:1px solid var(--border);
+    }
+    .preview-table td { padding:10px; border-bottom:1px solid rgba(58,24,40,.4); vertical-align:middle; }
+    .preview-table tr.dup td { opacity:.4; }
+    .dup-badge {
+      display:inline-block; padding:2px 7px; background:rgba(100,80,0,.3);
+      border:1px solid #665500; color:#ccaa44; border-radius:2px;
+      font-size:.65rem; font-family:'Cinzel',serif; margin-left:6px;
+    }
+    .preview-thumb { width:48px; height:48px; object-fit:cover; border-radius:3px; border:1px solid var(--border); }
+    .preview-thumb-ph { width:48px; height:48px; background:#2a1020; border:1px solid var(--border); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+    .preview-input {
+      background:#120508; border:1px solid var(--border); border-radius:3px;
+      color:var(--text); padding:6px 9px; font-family:'Cormorant Garamond',serif;
+      font-size:.88rem; outline:none; transition:border-color .2s; width:100%;
+    }
+    .preview-input:focus { border-color:var(--gold); }
+    .preview-actions { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+ 
+    /* ── MANAGE TABLE ─────────────────────────────── */
+    .mgmt-toolbar {
+      display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;
+    }
+    .mgmt-search {
+      flex:1; min-width:180px; padding:9px 12px; background:#120508;
+      border:1px solid var(--border); border-radius:4px; color:var(--text);
+      font-family:'Cormorant Garamond',serif; font-size:.95rem; outline:none;
+    }
+    .mgmt-search:focus { border-color:var(--gold); }
+    .btn-export, .btn-clear-all {
+      padding:9px 16px; font-family:'Cinzel',serif; font-size:.72rem;
+      letter-spacing:.08em; cursor:pointer; border-radius:3px; transition:all .2s;
+    }
+    .btn-export    { background:transparent; border:1px solid var(--gold); color:var(--gold-light); }
+    .btn-clear-all { background:transparent; border:1px solid #662; color:#cc9; }
+    .btn-export:hover { background:var(--gold); color:#000; }
+    .btn-clear-all:hover { background:rgba(150,100,0,.2); }
+ 
+    /* Bulk action bar */
+    .bulk-bar {
+      display:none; gap:10px; align-items:center; flex-wrap:wrap;
+      background:rgba(201,149,42,.07); border:1px solid rgba(201,149,42,.2);
+      border-radius:5px; padding:12px 16px; margin-bottom:12px;
+    }
+    .bulk-bar.visible { display:flex; }
+    .bulk-bar label { font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.08em; color:var(--gold-light); white-space:nowrap; }
+    .bulk-bar input[type=text] {
+      flex:1; min-width:120px; padding:7px 10px; background:#120508;
+      border:1px solid var(--border); border-radius:3px; color:var(--text);
+      font-family:'Cormorant Garamond',serif; font-size:.9rem; outline:none;
+    }
+    .bulk-bar input[type=text]:focus { border-color:var(--gold); }
+    .btn-bulk-apply {
+      padding:8px 18px; background:var(--crimson); color:var(--gold-light);
+      border:1px solid var(--gold); font-family:'Cinzel',serif; font-size:.72rem;
+      letter-spacing:.1em; cursor:pointer; border-radius:3px; transition:background .2s;
+    }
+    .btn-bulk-apply:hover { background:var(--deep); }
+    .bulk-count { font-size:.8rem; color:var(--muted); }
+ 
+    .items-table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    .items-table th {
+      font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.1em;
+      color:var(--muted); text-align:left; padding:10px 12px; border-bottom:1px solid var(--border);
+    }
+    .items-table th:first-child { width:36px; }
+    .items-table td { padding:10px 12px; border-bottom:1px solid rgba(58,24,40,.4); vertical-align:middle; }
+    .items-table tr:hover td { background:rgba(255,255,255,.02); }
+    .items-table tr.selected td { background:rgba(201,149,42,.06); }
+ 
+    .thumb { width:52px; height:52px; object-fit:cover; border-radius:4px; border:1px solid var(--border); }
+    .thumb-placeholder {
+      width:52px; height:52px; border-radius:4px; background:#2a1020;
+      border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.3rem;
+    }
+    .tag-badge {
+      display:inline-block; padding:2px 8px;
+      background:rgba(128,0,32,.3); border:1px solid rgba(201,149,42,.25);
+      color:var(--gold-light); border-radius:2px; font-size:.72rem; font-family:'Cinzel',serif;
+    }
+    .type-icon { font-size:1.2rem; }
+ 
+    /* Inline editable cells */
+    .editable-cell {
+      cursor:pointer; border-radius:3px; padding:4px 6px;
+      transition:background .15s; min-width:60px; display:inline-block;
+    }
+    .editable-cell:hover { background:rgba(201,149,42,.12); outline:1px dashed rgba(201,149,42,.4); }
+    .inline-edit-input {
+      background:#120508; border:1px solid var(--gold); border-radius:3px;
+      color:var(--text); padding:5px 8px; font-family:'Cormorant Garamond',serif;
+      font-size:.88rem; outline:none; width:140px;
+    }
+ 
+    .btn-del {
+      padding:5px 11px; background:transparent; border:1px solid #662;
+      color:#cc8888; font-size:.75rem; cursor:pointer; border-radius:3px; transition:all .2s;
+    }
+    .btn-del:hover { background:rgba(200,0,30,.2); border-color:#aa4444; }
+    .btn-up, .btn-dn {
+      padding:4px 8px; background:transparent; border:1px solid var(--border);
+      color:var(--muted); cursor:pointer; border-radius:3px; font-size:.8rem;
+      transition:all .2s; margin-right:3px;
+    }
+    .btn-up:hover, .btn-dn:hover { border-color:var(--gold); color:var(--gold-light); }
+    .empty-state { text-align:center; padding:48px; color:var(--muted); font-style:italic; }
+ 
+    /* ── PASSWORD MODAL ───────── */
+    .btn-change-pw {
+      padding:12px 28px; background:transparent; color:var(--gold-light);
+      border:1px solid var(--gold); font-family:'Cinzel',serif; font-size:.8rem;
+      letter-spacing:.12em; cursor:pointer; border-radius:4px; transition:all .2s;
+    }
+    .btn-change-pw:hover { background:rgba(201,149,42,.1); }
+    .pw-modal-overlay {
+      position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.75);
+      backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .25s;
+    }
+    .pw-modal-overlay.open { opacity:1; pointer-events:all; }
+    .pw-modal {
+      background:var(--card); border:1px solid var(--border); border-top:3px solid var(--gold);
+      border-radius:10px; padding:36px 32px; width:100%; max-width:480px;
+      box-shadow:0 32px 80px rgba(0,0,0,.7);
+      transform:translateY(20px) scale(.97); transition:transform .25s; position:relative;
+    }
+    .pw-modal-overlay.open .pw-modal { transform:translateY(0) scale(1); }
+    .pw-modal-title { font-family:'Cinzel',serif; color:var(--gold-light); font-size:1rem; letter-spacing:.12em; margin-bottom:6px; }
+    .pw-modal-sub {
+      color:var(--muted); font-size:.85rem; line-height:1.65; margin-bottom:24px;
+      padding-bottom:18px; border-bottom:1px solid var(--border);
+    }
+    .pw-modal-sub code { color:#88dd88; }
+    .pw-modal-close {
+      position:absolute; top:14px; right:16px; background:transparent; border:none;
+      color:var(--muted); font-size:1.2rem; cursor:pointer; line-height:1; transition:color .2s;
+    }
+    .pw-modal-close:hover { color:#ff8888; }
+    .hash-output {
+      margin-top:14px; padding:14px; background:#0c0306;
+      border:1px solid var(--border); border-radius:4px; font-family:monospace;
+      font-size:.78rem; color:#88dd88; word-break:break-all; line-height:1.6; display:none;
+    }
+ 
+    @media(max-width:640px){
+      .form-row { grid-template-columns:1fr; }
+      .login-box { padding:32px 20px; }
+      .admin-body { padding:20px 12px; }
+    }
+  </style>
+</head>
+<body>
+ 
+<!-- ══ LOGIN ══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <img src="Kanchiparivaar.jpg" class="login-logo" alt="logo" onerror="this.style.display='none'">
+    <div class="login-title">Admin Access</div>
+    <div class="login-sub">KanchiParivaar Management Portal</div>
+    <div class="login-error"  id="login-error">Incorrect password. Please try again.</div>
+    <div class="lockout-msg"  id="lockout-msg"></div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="pw-input" placeholder="Enter admin password">
+    </div>
+    <button class="btn-login" id="login-btn">ENTER ADMIN PANEL</button>
+    <p class="login-note">This area is for authorised administrators only.<br>Access is logged. Do not share this URL.</p>
+  </div>
+</div>
+ 
+<!-- ══ ADMIN PANEL ═════════════════════════════════════════ -->
+<div id="admin-panel">
+ 
+  <div class="admin-header">
+    <div class="admin-logo-row">
+      <img src="Kanchiparivaar.jpg" class="admin-logo-img" alt="logo" onerror="this.style.display='none'">
+      <span class="admin-title">KANCHIPARIVAAR — ADMIN</span>
+    </div>
+    <button class="btn-logout" id="logout-btn">LOGOUT</button>
+  </div>
+ 
+  <div class="admin-body">
+ 
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Total Items</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-img">0</div><div class="stat-lbl">Images</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-vid">0</div><div class="stat-lbl">Videos</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-tags">0</div><div class="stat-lbl">Categories</div></div>
+    </div>
+ 
+    <!-- ══ ADD NEW ITEM ══════════════════════════════════ -->
+    <div class="panel-card">
+      <h3>✦ ADD NEW GALLERY ITEM</h3>
+ 
+      <div class="form-row">
+        <div class="f-group">
+          <label>Media Type</label>
+          <select id="item-type">
+            <option value="image">🖼️ Image (URL or Google Drive)</option>
+            <option value="video">🎬 Video (URL)</option>
+            <option value="youtube">▶️ YouTube Embed</option>
+          </select>
+        </div>
+        <div class="f-group">
+          <label>Category / Tag <small style="opacity:.6">(optional)</small></label>
+          <input type="text" id="item-tag" placeholder="e.g. Kanjivaram, Silk, Wedding…" list="existing-tags">
+          <datalist id="existing-tags"></datalist>
+        </div>
+      </div>
+      <div class="f-group">
+        <label>URL / Embed Link</label>
+        <input type="text" id="item-url" placeholder="Paste URL here…">
+        <div class="url-help" id="url-help">
+          ✓ Google Drive links auto-convert — just paste the share link (drive.google.com/file/d/.../view) directly!
+        </div>
+      </div>
+      <div class="f-group">
+        <label>Label / Caption <small style="opacity:.6">(optional)</small></label>
+        <input type="text" id="item-label" placeholder="e.g. Pure Kanjivaram Silk – Ruby Red">
+      </div>
+ 
+      <button class="btn-add" id="add-item-btn">+ ADD TO GALLERY</button>
+      <div class="add-status" id="add-status"></div>
+ 
+      <!-- ══ GOOGLE DRIVE FOLDER BULK ADD ══════════════ -->
+      <div class="gdrive-section">
+        <h4>📁 BULK ADD FROM GOOGLE DRIVE FOLDER</h4>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+          Paste a Google Drive <strong style="color:var(--gold-light)">folder share link</strong> to preview all images inside it.
+          Duplicates are detected automatically and grayed out.
+        </p>
+        <div class="gdrive-row">
+          <div class="f-group" style="flex:1;margin-bottom:0">
+            <input type="text" id="folder-url" placeholder="https://drive.google.com/drive/folders/FOLDER_ID?usp=sharing">
+          </div>
+          <button class="btn-secondary" id="preview-folder-btn">🔍 Preview Folder</button>
+        </div>
+ 
+        <div class="preview-wrap" id="preview-wrap">
+          <div id="preview-status" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;"></div>
+          <div class="preview-actions">
+            <button class="btn-secondary" id="add-all-new-btn">✓ Add All New Items</button>
+            <button class="btn-danger"    id="clear-preview-btn">✕ Clear Preview</button>
+            <span id="preview-count" class="bulk-count"></span>
+          </div>
+          <table class="preview-table" id="preview-table">
+            <thead>
+              <tr>
+                <th></th><th>THUMB</th><th>FILE NAME / LABEL</th><th>TAG / CATEGORY</th><th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="preview-tbody"></tbody>
+          </table>
+          <div class="preview-actions" style="margin-top:8px;">
+            <button class="btn-secondary" id="add-checked-btn">✓ Add Checked Items</button>
+            <button class="btn-danger"    id="clear-preview-btn2">✕ Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ══ MANAGE GALLERY ════════════════════════════════ -->
+    <div class="panel-card">
+      <h3>✦ MANAGE GALLERY</h3>
+      <div class="mgmt-toolbar">
+        <input class="mgmt-search" type="text" id="mgmt-search" placeholder="Search by label or tag…">
+        <button class="btn-export"    id="export-btn">⬇ Export JSON</button>
+        <button class="btn-export"    id="import-btn">⬆ Import JSON</button>
+        <input type="file" id="import-input" accept=".json" style="display:none">
+        <button class="btn-clear-all" id="clear-all-btn">🗑 Clear All</button>
+      </div>
+ 
+      <!-- Bulk action bar -->
+      <div class="bulk-bar" id="bulk-bar">
+        <span class="bulk-count" id="bulk-count">0 selected</span>
+        <label>Label:</label>
+        <input type="text" id="bulk-label" placeholder="Apply label to selected…" list="existing-tags-bulk">
+        <datalist id="existing-tags-bulk"></datalist>
+        <label>Tag:</label>
+        <input type="text" id="bulk-tag" placeholder="Apply tag to selected…" list="existing-tags-bulk2">
+        <datalist id="existing-tags-bulk2"></datalist>
+        <button class="btn-bulk-apply" id="bulk-apply-btn">✓ Apply</button>
+        <button class="btn-danger" style="padding:7px 14px;font-size:.7rem;" id="deselect-all-btn">✕ Deselect All</button>
+      </div>
+ 
+      <div style="overflow-x:auto">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all-chk" title="Select all"></th>
+              <th>THUMB</th>
+              <th>TYPE</th>
+              <th>LABEL <small style="opacity:.5;font-size:.6rem">(click to edit)</small></th>
+              <th>TAG <small style="opacity:.5;font-size:.6rem">(click to edit)</small></th>
+              <th>ORDER</th>
+              <th>REMOVE</th>
+            </tr>
+          </thead>
+          <tbody id="items-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+    <!-- Change password -->
+    <div class="panel-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <h3 style="border:none;padding:0;margin:0 0 6px">✦ ADMIN PASSWORD</h3>
+        <p style="color:var(--muted);font-size:.88rem;">Generate a new SHA-256 password hash to update your login credentials.</p>
+      </div>
+      <button class="btn-change-pw" id="change-pw-btn">🔑 CHANGE PASSWORD</button>
+    </div>
+ 
+  </div><!-- /admin-body -->
+</div><!-- /admin-panel -->
+ 
+<!-- ══ PASSWORD CHANGE MODAL ═══════════════════════════════ -->
+<div class="pw-modal-overlay" id="pw-modal-overlay">
+  <div class="pw-modal" role="dialog" aria-modal="true">
+    <button class="pw-modal-close" id="pw-modal-close">✕</button>
+    <div class="pw-modal-title">✦ CHANGE ADMIN PASSWORD</div>
+    <div class="pw-modal-sub">
+      Generates a SHA-256 hash of your new password.<br>
+      Copy the hash and update <code>ADMIN_PASSWORD_HASH</code> in your Netlify environment variables.
+    </div>
+    <div class="form-row">
+      <div class="f-group">
+        <label>New Password</label>
+        <input type="password" id="new-pw" placeholder="Type new password">
+      </div>
+      <div class="f-group">
+        <label>Confirm Password</label>
+        <input type="password" id="new-pw2" placeholder="Repeat password">
+      </div>
+    </div>
+    <button class="btn-add" id="generate-hash-btn">GENERATE HASH</button>
+    <div class="hash-output" id="hash-output"></div>
+  </div>
+</div>
+ 
+<!-- No admin-config.js — all secrets are in Netlify env vars -->
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIGURATION — no secrets here, just UI settings
+// ══════════════════════════════════════════════════════════════
+const ADMIN_CONFIG = {
+  SESSION_DURATION: 60 // minutes
+};
+ 
+const SESSION_KEY = 'kanchi_admin_session';
+ 
+// ── HTML escaping — prevents XSS ─────────────────────────────
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+ 
+// ── URL validation — only allow known safe prefixes ───────────
+const ALLOWED_URL_PREFIXES = [
+  'https://lh3.googleusercontent.com/',
+  'https://drive.google.com/',
+  'https://www.youtube.com/embed/',
+  'https://youtube.com/embed/',
+  'https://www.youtube.com/shorts/',
+  'https://youtube.com/shorts/',
+  'https://drive.google.com/uc?export=download',
+];
+ 
+function isSafeUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  return ALLOWED_URL_PREFIXES.some(p => url.startsWith(p));
+}
+ 
+// ── Validate imported/fetched gallery item structure ──────────
+function isValidItem(item) {
+  return (
+    item &&
+    typeof item === 'object' &&
+    typeof item.id   === 'string' && item.id.length > 0 &&
+    typeof item.type === 'string' && ['image','video','youtube'].includes(item.type) &&
+    typeof item.url  === 'string' && isSafeUrl(item.url)
+  );
+}
+ 
+// ── Rate-limited login ────────────────────────────────────────
+const MAX_ATTEMPTS   = 5;
+const LOCKOUT_MS     = 15 * 60 * 1000; // 15 minutes
+const ATTEMPT_KEY    = 'kanchi_login_attempts';
+ 
+function getAttemptState() {
+  // FIX: Use localStorage so lockout persists across tabs — sessionStorage is per-tab
+  // which allowed bypass simply by opening a new tab.
+  try { return JSON.parse(localStorage.getItem(ATTEMPT_KEY) || '{"count":0,"lockedUntil":0}'); }
+  catch { return { count: 0, lockedUntil: 0 }; }
+}
+function saveAttemptState(state) {
+  localStorage.setItem(ATTEMPT_KEY, JSON.stringify(state));
+}
+function isLockedOut() {
+  const s = getAttemptState();
+  return s.lockedUntil && Date.now() < s.lockedUntil;
+}
+function recordFailedAttempt() {
+  const s = getAttemptState();
+  s.count++;
+  if (s.count >= MAX_ATTEMPTS) {
+    s.lockedUntil = Date.now() + LOCKOUT_MS;
+    s.count = 0;
+  }
+  saveAttemptState(s);
+}
+function clearAttempts() {
+  localStorage.removeItem(ATTEMPT_KEY);
+}
+ 
+// ── Auth ───────────────────────────────────────────────────────
+async function doLogin() {
+  const lockoutMsg = document.getElementById('lockout-msg');
+  const errorMsg   = document.getElementById('login-error');
+ 
+  if (isLockedOut()) {
+    const s = getAttemptState();
+    const mins = Math.ceil((s.lockedUntil - Date.now()) / 60000);
+    lockoutMsg.textContent = `Too many failed attempts. Please wait ${mins} minute(s).`;
+    lockoutMsg.style.display = 'block';
+    errorMsg.style.display = 'none';
+    return;
+  }
+ 
+  const pw  = document.getElementById('pw-input').value;
+  const btn = document.getElementById('login-btn');
+  if (!pw) return;
+ 
+  btn.disabled    = true;
+  btn.textContent = 'CHECKING…';
+ 
+  try {
+    // Password check is done server-side via Netlify function
+    const res = await fetch('/.netlify/functions/admin-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+ 
+    if (!res.ok) throw new Error('Server error');
+    const { valid } = await res.json();
+ 
+    if (valid) {
+      clearAttempts();
+      const expiry = Date.now() + (ADMIN_CONFIG.SESSION_DURATION || 60) * 60 * 1000;
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ expiry }));
+      // FIX: Keep the raw password in memory (not persisted) to use as the write-endpoint token.
+      // This is cleared on logout/page reload. Never stored to localStorage/sessionStorage.
+      window.__ADMIN_TOKEN__ = pw;
+      showPanel();
+    } else {
+      recordFailedAttempt();
+      errorMsg.style.display = 'block';
+      lockoutMsg.style.display = 'none';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  } catch (e) {
+    errorMsg.textContent = 'Login failed. Please try again.';
+    errorMsg.style.display = 'block';
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'ENTER ADMIN PANEL';
+  }
+}
+ 
+function checkSession() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+    return s.expiry && Date.now() < s.expiry;
+  } catch { return false; }
+}
+ 
+function showPanel() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-panel').style.display  = 'block';
+  loadFromGitHub().then(() => {
+    refreshStats();
+    renderTable();
+    refreshTagList();
+  });
+}
+ 
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  window.__ADMIN_TOKEN__ = '';
+  location.reload();
+}
+ 
+if (checkSession()) showPanel();
+ 
+// Wire up login button and Enter key (no inline onclick)
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('logout-btn').addEventListener('click', doLogout);
+ 
+// ── GitHub API via Netlify functions (no token in browser) ─────
+let _cachedItems = [];
+let _fileSha     = null;
+ 
+async function loadFromGitHub() {
+  try {
+    const res = await fetch('/.netlify/functions/gallery-read');
+    if (!res.ok) throw new Error('Read failed');
+    const data = await res.json();
+    _fileSha     = data.sha;
+    // Validate every item before trusting it
+    _cachedItems = (data.content || []).filter(isValidItem);
+  } catch(e) {
+    console.error('Load error:', e);
+    _cachedItems = [];
+  }
+}
+ 
+async function saveToGitHub(items) {
+  try {
+    // FIX: Send the shared secret token so the write endpoint can authenticate this request.
+    // ADMIN_SECRET_TOKEN must be set as a Netlify environment variable (same value both sides).
+    const res = await fetch('/.netlify/functions/gallery-write', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-token': window.__ADMIN_TOKEN__ || ''
+      },
+      body: JSON.stringify({ items, sha: _fileSha })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    _fileSha     = data.sha;
+    _cachedItems = items;
+    return true;
+  } catch(e) {
+    console.error('Save error:', e);
+    return false;
+  }
+}
+ 
+function getItems()        { return _cachedItems || []; }
+async function saveItems(arr) {
+  _cachedItems = arr;
+  return await saveToGitHub(arr);
+}
+ 
+// ── URL help text ──────────────────────────────────────────────
+document.getElementById('item-type').addEventListener('change', updateUrlHelp);
+ 
+function updateUrlHelp() {
+  const type = document.getElementById('item-type').value;
+  const help = document.getElementById('url-help');
+  const urlInput = document.getElementById('item-url');
+  const helps = {
+    image:   '✓ Google Drive links auto-convert — just paste the share link (drive.google.com/file/d/.../view) directly!',
+    video:   '✓ Google Drive links auto-convert — just paste the share link (drive.google.com/file/d/.../view) directly!',
+    youtube: 'Paste the YouTube video URL (e.g. https://youtu.be/XXXXXXXX or https://www.youtube.com/watch?v=XXXXXXXX).'
+  };
+  const placeholders = {
+    image:   'https://drive.google.com/file/d/FILE_ID/view?usp=sharing',
+    video:   'https://drive.google.com/file/d/FILE_ID/view?usp=sharing',
+    youtube: 'https://youtu.be/XXXXXXXXX'
+  };
+  help.textContent      = helps[type];
+  urlInput.placeholder  = placeholders[type];
+}
+ 
+// ── Convert user URLs to embed URLs ───────────────────────────
+function toEmbedUrl(type, url) {
+  url = url.trim();
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/?&]+)/);
+  if (driveMatch) {
+    const fileId = driveMatch[1];
+    if (type === 'video') return `https://drive.google.com/uc?export=download&id=${fileId}`;
+    return `https://lh3.googleusercontent.com/d/${fileId}`;
+  }
+  if (type === 'youtube') {
+    let id = '';
+    const m1 = url.match(/youtu\.be\/([^?&]+)/);
+    const m2 = url.match(/[?&]v=([^&]+)/);
+    const m3 = url.match(/embed\/([^?&]+)/);
+    const m4 = url.match(/shorts\/([^?&]+)/);
+    if (m1) id = m1[1];
+    else if (m2) id = m2[1];
+    else if (m3) id = m3[1];
+    else if (m4) id = m4[1];
+    else id = url;
+    return `https://www.youtube.com/embed/${id}`;
+  }
+  return url;
+}
+ 
+// ── Add single item ────────────────────────────────────────────
+document.getElementById('add-item-btn').addEventListener('click', addItem);
+ 
+async function addItem() {
+  const type   = document.getElementById('item-type').value;
+  const rawUrl = document.getElementById('item-url').value.trim();
+  const label  = document.getElementById('item-label').value.trim();
+  const tag    = document.getElementById('item-tag').value.trim();
+ 
+  if (!rawUrl) { showStatus('Please enter a URL.', false); return; }
+ 
+  const url = toEmbedUrl(type, rawUrl);
+ 
+  // Validate the final URL is safe before saving
+  if (!isSafeUrl(url)) {
+    showStatus('⚠️ URL not allowed. Only Google Drive and YouTube URLs are supported.', false);
+    return;
+  }
+ 
+  if (getItems().some(i => i.url === url)) {
+    showStatus('⚠️ This item is already in the gallery (duplicate URL skipped).', false);
+    return;
+  }
+ 
+  const item = {
+    id:    Date.now() + Math.random().toString(36).slice(2),
+    type,
+    url,
+    label: label.slice(0, 200),  // cap length
+    tag:   tag.slice(0, 50),
+    added: new Date().toISOString()
+  };
+ 
+  const items = getItems();
+  items.push(item);
+ 
+  showStatus('⏳ Saving…', true);
+  const ok = await saveItems(items);
+ 
+  document.getElementById('item-url').value   = '';
+  document.getElementById('item-label').value = '';
+  document.getElementById('item-tag').value   = '';
+ 
+  showStatus(ok ? '✓ Item added & saved!' : '⚠️ Save failed — please try again.', ok);
+  refreshStats(); renderTable(); refreshTagList();
+}
+ 
+function showStatus(msg, ok) {
+  const el = document.getElementById('add-status');
+  el.textContent = msg;
+  el.className   = 'add-status ' + (ok ? 'ok' : 'err');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+ 
+// ── Stats ──────────────────────────────────────────────────────
+function refreshStats() {
+  const items = getItems();
+  document.getElementById('stat-total').textContent = items.length;
+  document.getElementById('stat-img').textContent   = items.filter(i => i.type === 'image').length;
+  document.getElementById('stat-vid').textContent   = items.filter(i => i.type === 'video' || i.type === 'youtube').length;
+  document.getElementById('stat-tags').textContent  = new Set(items.map(i => i.tag).filter(Boolean)).size;
+}
+ 
+// ── Tag autocomplete ───────────────────────────────────────────
+function refreshTagList() {
+  const tags = [...new Set(getItems().map(i => i.tag).filter(Boolean))];
+  const opts = tags.map(t => `<option value="${escHtml(t)}">`).join('');
+  document.getElementById('existing-tags').innerHTML       = opts;
+  document.getElementById('existing-tags-bulk').innerHTML  = opts;
+  document.getElementById('existing-tags-bulk2').innerHTML = opts;
+}
+ 
+// ── Manage table ───────────────────────────────────────────────
+let _selectedIds = new Set();
+ 
+function renderTable(search = '') {
+  const items    = getItems();
+  const q        = search.toLowerCase();
+  const filtered = q
+    ? items.filter(i =>
+        (i.label || '').toLowerCase().includes(q) ||
+        (i.tag   || '').toLowerCase().includes(q)
+      )
+    : items;
+ 
+  const tbody = document.getElementById('items-tbody');
+ 
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">No items found.</div></td></tr>`;
+    updateBulkBar();
+    return;
+  }
+ 
+  const typeIcons = { image:'🖼️', video:'🎬', youtube:'▶️' };
+ 
+  // Build table using DOM to avoid XSS from item data
+  tbody.innerHTML = '';
+ 
+  filtered.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.id = `row-${item.id}`;
+    if (_selectedIds.has(item.id)) tr.classList.add('selected');
+ 
+    // Checkbox
+    const tdChk = document.createElement('td');
+    const chk   = document.createElement('input');
+    chk.type    = 'checkbox';
+    chk.checked = _selectedIds.has(item.id);
+    chk.addEventListener('change', () => toggleRowSelect(item.id, chk.checked));
+    tdChk.appendChild(chk);
+    tr.appendChild(tdChk);
+ 
+    // Thumbnail
+    const tdThumb = document.createElement('td');
+    if (item.type === 'image') {
+      const img    = document.createElement('img');
+      img.className = 'thumb';
+      img.src       = item.url;
+      img.alt       = '';
+      img.onerror   = function() { this.style.opacity = '.3'; };
+      tdThumb.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className   = 'thumb-placeholder';
+      ph.textContent = typeIcons[item.type] || '?';
+      tdThumb.appendChild(ph);
+    }
+    tr.appendChild(tdThumb);
+ 
+    // Type icon
+    const tdType    = document.createElement('td');
+    const typeSpan  = document.createElement('span');
+    typeSpan.className   = 'type-icon';
+    typeSpan.textContent = typeIcons[item.type] || '?';
+    tdType.appendChild(typeSpan);
+    tr.appendChild(tdType);
+ 
+    // Label (editable) — textContent used, no innerHTML with data
+    const tdLabel = document.createElement('td');
+    const lblSpan = document.createElement('span');
+    lblSpan.className = 'editable-cell';
+    lblSpan.id        = `lbl-${item.id}`;
+    lblSpan.title     = 'Click to edit';
+    if (item.label) {
+      lblSpan.textContent = item.label;
+    } else {
+      const em = document.createElement('span');
+      em.style.cssText = 'opacity:.35;font-style:italic';
+      em.textContent   = 'no label';
+      lblSpan.appendChild(em);
+    }
+    lblSpan.addEventListener('click', () => startInlineEdit(item.id, 'label'));
+    tdLabel.appendChild(lblSpan);
+    tr.appendChild(tdLabel);
+ 
+    // Tag (editable)
+    const tdTag  = document.createElement('td');
+    const tagSpan = document.createElement('span');
+    tagSpan.className = 'editable-cell';
+    tagSpan.id        = `tag-${item.id}`;
+    tagSpan.title     = 'Click to edit';
+    if (item.tag) {
+      const badge = document.createElement('span');
+      badge.className   = 'tag-badge';
+      badge.textContent = item.tag;
+      tagSpan.appendChild(badge);
+    } else {
+      const dash = document.createElement('span');
+      dash.style.opacity = '.3';
+      dash.textContent   = '—';
+      tagSpan.appendChild(dash);
+    }
+    tagSpan.addEventListener('click', () => startInlineEdit(item.id, 'tag'));
+    tdTag.appendChild(tagSpan);
+    tr.appendChild(tdTag);
+ 
+    // Order buttons
+    const tdOrder = document.createElement('td');
+    const btnUp   = document.createElement('button');
+    btnUp.className   = 'btn-up';
+    btnUp.textContent = '↑';
+    btnUp.addEventListener('click', () => moveItem(item.id, -1));
+    const btnDn = document.createElement('button');
+    btnDn.className   = 'btn-dn';
+    btnDn.textContent = '↓';
+    btnDn.addEventListener('click', () => moveItem(item.id, +1));
+    tdOrder.appendChild(btnUp);
+    tdOrder.appendChild(btnDn);
+    tr.appendChild(tdOrder);
+ 
+    // Delete
+    const tdDel  = document.createElement('td');
+    const btnDel = document.createElement('button');
+    btnDel.className   = 'btn-del';
+    btnDel.textContent = 'Remove';
+    btnDel.addEventListener('click', () => deleteItem(item.id));
+    tdDel.appendChild(btnDel);
+    tr.appendChild(tdDel);
+ 
+    tbody.appendChild(tr);
+  });
+ 
+  document.getElementById('select-all-chk').checked = false;
+  updateBulkBar();
+}
+ 
+// ── Search wired up without inline handler ─────────────────────
+document.getElementById('mgmt-search').addEventListener('input', function() {
+  renderTable(this.value);
+});
+ 
+// ── Inline editing ─────────────────────────────────────────────
+function startInlineEdit(id, field) {
+  const cell = document.getElementById(field === 'label' ? `lbl-${id}` : `tag-${id}`);
+  const item = getItems().find(i => i.id === id);
+  if (!item) return;
+ 
+  const input = document.createElement('input');
+  input.className = 'inline-edit-input';
+  input.value     = item[field] || '';
+  input.setAttribute('list', 'existing-tags');
+  cell.innerHTML  = '';
+  cell.appendChild(input);
+  input.focus();
+  input.select();
+ 
+  async function commit() {
+    const val   = input.value.trim().slice(0, field === 'label' ? 200 : 50);
+    const items = getItems();
+    const idx   = items.findIndex(i => i.id === id);
+    if (idx === -1) return;
+    items[idx][field] = val;
+    await saveItems(items);
+    refreshStats();
+    renderTable(document.getElementById('mgmt-search').value || '');
+    refreshTagList();
+  }
+ 
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { renderTable(); }
+  });
+}
+ 
+// ── Checkbox / bulk selection ──────────────────────────────────
+document.getElementById('select-all-chk').addEventListener('change', function() {
+  toggleSelectAll(this.checked);
+});
+ 
+function toggleRowSelect(id, checked) {
+  checked ? _selectedIds.add(id) : _selectedIds.delete(id);
+  const row = document.getElementById(`row-${id}`);
+  if (row) row.classList.toggle('selected', checked);
+  updateBulkBar();
+}
+ 
+function toggleSelectAll(checked) {
+  getItems().forEach(i => { checked ? _selectedIds.add(i.id) : _selectedIds.delete(i.id); });
+  renderTable(document.getElementById('mgmt-search').value || '');
+  document.getElementById('select-all-chk').checked = checked;
+}
+ 
+document.getElementById('deselect-all-btn').addEventListener('click', () => {
+  _selectedIds.clear();
+  renderTable(document.getElementById('mgmt-search').value || '');
+});
+ 
+function clearSelection() {
+  _selectedIds.clear();
+  renderTable(document.getElementById('mgmt-search').value || '');
+}
+ 
+function updateBulkBar() {
+  const bar   = document.getElementById('bulk-bar');
+  const count = _selectedIds.size;
+  document.getElementById('bulk-count').textContent = `${count} selected`;
+  bar.classList.toggle('visible', count > 0);
+}
+ 
+document.getElementById('bulk-apply-btn').addEventListener('click', applyBulkEdit);
+ 
+async function applyBulkEdit() {
+  if (!_selectedIds.size) return;
+  const newLabel = document.getElementById('bulk-label').value.trim().slice(0, 200);
+  const newTag   = document.getElementById('bulk-tag').value.trim().slice(0, 50);
+  if (!newLabel && !newTag) { alert('Please enter a label or tag to apply.'); return; }
+ 
+  const items = getItems();
+  items.forEach(i => {
+    if (_selectedIds.has(i.id)) {
+      if (newLabel) i.label = newLabel;
+      if (newTag)   i.tag   = newTag;
+    }
+  });
+ 
+  showStatus('⏳ Saving…', true);
+  const ok = await saveItems(items);
+  showStatus(ok ? `✓ Applied to ${_selectedIds.size} items!` : '⚠️ Save failed.', ok);
+  document.getElementById('bulk-label').value = '';
+  document.getElementById('bulk-tag').value   = '';
+  _selectedIds.clear();
+  refreshStats(); renderTable(); refreshTagList();
+}
+ 
+// ── Delete / Move ──────────────────────────────────────────────
+async function deleteItem(id) {
+  if (!confirm('Remove this item from the gallery?')) return;
+  const items = getItems().filter(i => i.id !== id);
+  showStatus('⏳ Saving…', true);
+  const ok = await saveItems(items);
+  showStatus(ok ? '✓ Removed!' : '⚠️ Save failed.', ok);
+  _selectedIds.delete(id);
+  refreshStats(); renderTable(); refreshTagList();
+}
+ 
+async function moveItem(id, dir) {
+  const items  = getItems();
+  const idx    = items.findIndex(i => i.id === id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= items.length) return;
+  [items[idx], items[newIdx]] = [items[newIdx], items[idx]];
+  await saveItems(items);
+  renderTable();
+}
+ 
+document.getElementById('clear-all-btn').addEventListener('click', async () => {
+  // Double confirmation for destructive action
+  if (!confirm('Delete ALL gallery items? This cannot be undone.')) return;
+  if (!confirm('Are you absolutely sure? All gallery items will be permanently removed.')) return;
+  showStatus('⏳ Clearing…', true);
+  const ok = await saveItems([]);
+  showStatus(ok ? '✓ All cleared!' : '⚠️ Save failed.', ok);
+  _selectedIds.clear();
+  refreshStats(); renderTable(); refreshTagList();
+});
+ 
+// ── Export / Import ────────────────────────────────────────────
+document.getElementById('export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(getItems(), null, 2)], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'kanchi-gallery-backup.json';
+  a.click();
+});
+ 
+document.getElementById('import-btn').addEventListener('click', () => {
+  document.getElementById('import-input').click();
+});
+ 
+document.getElementById('import-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const arr = JSON.parse(ev.target.result);
+      if (!Array.isArray(arr)) throw new Error('Not an array');
+ 
+      // Validate every item in the imported file
+      const safeItems = arr.filter(item => {
+        if (!isValidItem(item)) {
+          console.warn('Skipped invalid/unsafe item during import:', item?.id || 'unknown');
+          return false;
+        }
+        return true;
+      });
+ 
+      const skipped  = arr.length - safeItems.length;
+      const existing = getItems();
+      const merged   = [...existing, ...safeItems.filter(n => !existing.find(e => e.id === n.id))];
+ 
+      showStatus('⏳ Importing…', true);
+      const ok = await saveItems(merged);
+      const msg = ok
+        ? `✓ Imported ${safeItems.length} items${skipped ? ` (${skipped} unsafe items skipped)` : ''}!`
+        : '⚠️ Import failed.';
+      showStatus(msg, ok);
+      refreshStats(); renderTable(); refreshTagList();
+    } catch { showStatus('Import failed: invalid JSON file.', false); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+ 
+// ── Google Drive Folder Bulk Add ───────────────────────────────
+let _previewItems = [];
+ 
+document.getElementById('preview-folder-btn').addEventListener('click', previewFolder);
+document.getElementById('add-all-new-btn').addEventListener('click',    addAllNew);
+document.getElementById('add-checked-btn').addEventListener('click',    addCheckedItems);
+document.getElementById('clear-preview-btn').addEventListener('click',  clearPreview);
+document.getElementById('clear-preview-btn2').addEventListener('click', clearPreview);
+ 
+async function previewFolder() {
+  const raw      = document.getElementById('folder-url').value.trim();
+  const statusEl = document.getElementById('preview-status');
+  const wrap     = document.getElementById('preview-wrap');
+ 
+  const m = raw.match(/folders\/([^?&/]+)/);
+  if (!m) {
+    alert('Could not find a Google Drive folder ID in that URL.\nMake sure you paste a folder share link.');
+    return;
+  }
+ 
+  // Sanitize folder ID — only alphanumeric, hyphens, underscores
+  const folderId = m[1].replace(/[^a-zA-Z0-9_-]/g, '');
+  if (!folderId) { alert('Invalid folder ID.'); return; }
+ 
+  statusEl.textContent = '⏳ Fetching files from Google Drive…';
+  wrap.style.display   = 'block';
+  document.getElementById('preview-tbody').innerHTML = '';
+  document.getElementById('preview-count').textContent = '';
+ 
+  try {
+    // API call goes via Netlify function — no API key in browser
+    const res = await fetch(`/.netlify/functions/drive-folder?folderId=${encodeURIComponent(folderId)}`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'API error');
+    }
+    const allFiles = await res.json();
+ 
+    if (!allFiles.length) {
+      statusEl.textContent = 'No image files found in this folder.';
+      return;
+    }
+ 
+    const existing     = getItems();
+    const existingUrls = new Set(existing.map(i => i.url));
+ 
+    _previewItems = allFiles.map(f => {
+      const url = `https://lh3.googleusercontent.com/d/${f.id}`;
+      return {
+        id:      Date.now() + Math.random().toString(36).slice(2),
+        driveId: f.id,
+        name:    f.name.replace(/\.[^.]+$/, '').slice(0, 200),
+        type:    'image',
+        url,
+        label:   '',
+        tag:     '',
+        added:   new Date().toISOString(),
+        isDup:   existingUrls.has(url)
+      };
+    });
+ 
+    const newCount = _previewItems.filter(i => !i.isDup).length;
+    const dupCount = _previewItems.filter(i =>  i.isDup).length;
+ 
+    statusEl.textContent = `Found ${_previewItems.length} image(s): ${newCount} new, ${dupCount} already in gallery.`;
+    document.getElementById('preview-count').textContent = `${newCount} new items ready to add`;
+ 
+    // Build preview table using DOM — no innerHTML with file data
+    const tbody = document.getElementById('preview-tbody');
+    tbody.innerHTML = '';
+ 
+    _previewItems.forEach((item, idx) => {
+      const tr  = document.createElement('tr');
+      if (item.isDup) tr.classList.add('dup');
+ 
+      // Checkbox
+      const tdChk = document.createElement('td');
+      const chk   = document.createElement('input');
+      chk.type         = 'checkbox';
+      chk.className    = 'preview-chk';
+      chk.dataset.idx  = idx;
+      chk.checked      = !item.isDup;
+      chk.disabled     = item.isDup;
+      if (item.isDup) chk.title = 'Already in gallery';
+      tdChk.appendChild(chk);
+      tr.appendChild(tdChk);
+ 
+      // Thumb
+      const tdThumb = document.createElement('td');
+      const img     = document.createElement('img');
+      img.className = 'preview-thumb';
+      img.src       = item.url;
+      img.alt       = '';
+      img.onerror   = function() { this.src = 'https://via.placeholder.com/48/800020/C9952A?text=?'; };
+      tdThumb.appendChild(img);
+      tr.appendChild(tdThumb);
+ 
+      // Label input
+      const tdLabel   = document.createElement('td');
+      const labelInput = document.createElement('input');
+      labelInput.className   = 'preview-input';
+      labelInput.type        = 'text';
+      labelInput.value       = item.name;
+      labelInput.placeholder = 'Label / caption…';
+      labelInput.addEventListener('input', () => { _previewItems[idx].label = labelInput.value; });
+      tdLabel.appendChild(labelInput);
+      tr.appendChild(tdLabel);
+ 
+      // Tag input
+      const tdTag   = document.createElement('td');
+      const tagInput = document.createElement('input');
+      tagInput.className   = 'preview-input';
+      tagInput.type        = 'text';
+      tagInput.placeholder = 'Tag / category…';
+      tagInput.setAttribute('list', 'existing-tags');
+      tagInput.style.width = '120px';
+      tagInput.addEventListener('input', () => { _previewItems[idx].tag = tagInput.value; });
+      tdTag.appendChild(tagInput);
+      tr.appendChild(tdTag);
+ 
+      // Status
+      const tdStatus = document.createElement('td');
+      if (item.isDup) {
+        const badge = document.createElement('span');
+        badge.className   = 'dup-badge';
+        badge.textContent = 'DUPLICATE';
+        tdStatus.appendChild(badge);
+      } else {
+        const span = document.createElement('span');
+        span.style.cssText = 'color:#88ee99;font-size:.8rem';
+        span.textContent   = 'NEW';
+        tdStatus.appendChild(span);
+      }
+      tr.appendChild(tdStatus);
+ 
+      tbody.appendChild(tr);
+    });
+ 
+  } catch(err) {
+    statusEl.textContent = `❌ Error: ${escHtml(err.message)}`;
+    console.error(err);
+  }
+}
+ 
+async function addAllNew() {
+  const toAdd = _previewItems.filter(i => !i.isDup);
+  if (!toAdd.length) { alert('No new items to add.'); return; }
+  await _bulkInsert(toAdd);
+}
+ 
+async function addCheckedItems() {
+  const checkboxes = document.querySelectorAll('.preview-chk');
+  const toAdd = [];
+  checkboxes.forEach(chk => {
+    if (chk.checked) toAdd.push(_previewItems[parseInt(chk.dataset.idx)]);
+  });
+  if (!toAdd.length) { alert('No items checked.'); return; }
+  await _bulkInsert(toAdd);
+}
+ 
+async function _bulkInsert(toAdd) {
+  const items = getItems();
+  let added   = 0;
+  toAdd.forEach(p => {
+    if (!isSafeUrl(p.url)) return; // Skip unsafe URLs
+    if (!items.some(i => i.url === p.url)) {
+      items.push({
+        id:    p.id,
+        type:  p.type,
+        url:   p.url,
+        label: (p.label || '').slice(0, 200),
+        tag:   (p.tag   || '').slice(0, 50),
+        added: p.added
+      });
+      added++;
+    }
+  });
+  showStatus(`⏳ Saving ${added} items…`, true);
+  const ok = await saveItems(items);
+  showStatus(ok ? `✓ Added ${added} items!` : '⚠️ Save failed.', ok);
+  refreshStats(); renderTable(); refreshTagList();
+  clearPreview();
+}
+ 
+function clearPreview() {
+  _previewItems = [];
+  document.getElementById('preview-wrap').style.display    = 'none';
+  document.getElementById('folder-url').value              = '';
+  document.getElementById('preview-tbody').innerHTML       = '';
+  document.getElementById('preview-status').textContent    = '';
+  document.getElementById('preview-count').textContent     = '';
+}
+ 
+// ── Password Modal ─────────────────────────────────────────────
+document.getElementById('change-pw-btn').addEventListener('click',  openPwModal);
+document.getElementById('pw-modal-close').addEventListener('click', closePwModal);
+document.getElementById('generate-hash-btn').addEventListener('click', generateHash);
+document.getElementById('pw-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('pw-modal-overlay')) closePwModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePwModal(); });
+document.getElementById('new-pw').addEventListener('keydown',  e => { if (e.key === 'Enter') generateHash(); });
+document.getElementById('new-pw2').addEventListener('keydown', e => { if (e.key === 'Enter') generateHash(); });
+ 
+function openPwModal() {
+  document.getElementById('pw-modal-overlay').classList.add('open');
+  document.getElementById('new-pw').value  = '';
+  document.getElementById('new-pw2').value = '';
+  const out = document.getElementById('hash-output');
+  out.style.display = 'none'; out.textContent = '';
+  setTimeout(() => document.getElementById('new-pw').focus(), 100);
+}
+ 
+function closePwModal() {
+  document.getElementById('pw-modal-overlay').classList.remove('open');
+}
+ 
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+ 
+async function generateHash() {
+  const pw  = document.getElementById('new-pw').value;
+  const pw2 = document.getElementById('new-pw2').value;
+  const out = document.getElementById('hash-output');
+  out.style.display = 'block';
+  if (!pw)       { out.style.color = '#ff8888'; out.textContent = 'Please enter a password.'; return; }
+  if (pw !== pw2){ out.style.color = '#ff8888'; out.textContent = 'Passwords do not match.';  return; }
+  const h = await sha256(pw);
+  out.style.color = '#88dd88';
+  // Use textContent for the instruction, then a code element for the hash
+  out.innerHTML = '';
+  const intro = document.createElement('strong');
+  intro.textContent = 'Copy this hash and update ADMIN_PASSWORD_HASH in your Netlify environment variables:';
+  const br   = document.createElement('br');
+  const br2  = document.createElement('br');
+  const code = document.createElement('code');
+  code.textContent = h;
+  out.appendChild(intro);
+  out.appendChild(br);
+  out.appendChild(br2);
+  out.appendChild(code);
+}
+</script>
+</body>
+</html>

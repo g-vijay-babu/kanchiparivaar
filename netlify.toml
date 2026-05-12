@@ -1,0 +1,16 @@
+[build]
+  publish = "."
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- gallery.json"
+ 
+[functions]
+  directory = "netlify/functions"
+ 
+[[redirects]]
+  from = "/"
+  to   = "/index.html"
+  status = 200
+ 
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
